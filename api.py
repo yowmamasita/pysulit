@@ -2,19 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 
 
-class Sulit:
-    @staticmethod
-    def search(self, term):
-        s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
-        data = Util.scrape(s_url + term)
-        soup = BeautifulSoup(data)
-        return soup
-
-
 class Ad:
-    def __init__(self, id, title, price):
+    def __init__(self, id, name, price):
         self.id = id
-        self.name = self._get_name(title)
+        self.name = name
         self.price = price
 
     def __repr__(self):
@@ -27,21 +18,42 @@ class Ad:
         soup = BeautifulSoup(data)
 
         title = soup.title.string
+        name = Util.get_name(title)
         price_ = soup.find('span', itemprop='price').string.replace(',', '')
         price = float(price_)
 
-        _ad = cls(id, title, price)
+        _ad = cls(id, name, price)
         return _ad
-
-    def _get_name(self, title):
-        idx = title.rfind('-')
-        idx = title.rfind('-', 0, idx)
-        name = title[:idx].strip()
-        return name
 
 
 class Ads:
-    pass
+    def __init__(self, adList):
+        self.adList = adList
+        self.length = len(adList)
+
+    def __repr__(self):
+        return "%s (%d results)" % (self.__class__, self.length)
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if len(self.adList):
+            a = self.adList.pop()
+            link = a.find('a')['href']
+            idx = link.find('/id/')
+            idx_ = link.find('/', idx+4)
+            return Ad.from_id(int(link[idx+4:idx_]))
+        else:
+            raise StopIteration
+
+    @classmethod
+    def search(cls, term):
+        s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
+        data = Util.scrape(s_url + term)
+        soup = BeautifulSoup(data)
+        adList = soup('div', class_='listingItem')
+        return cls(adList)
 
 
 class Util:
@@ -60,5 +72,16 @@ class Util:
         r = s.get(url, headers=headers)
         return r.text
 
+    @staticmethod
+    def get_name(title):
+        idx = title.rfind('-')
+        idx = title.rfind('-', 0, idx)
+        name = title[:idx].strip()
+        return name
 
-print str(Ad.from_id(36874892))
+
+# print str(Ad.from_id(36874892))
+ss = Ads.search('yyy')
+print ss
+for s in ss:
+    print s
