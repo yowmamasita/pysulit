@@ -3,8 +3,8 @@ from bs4 import BeautifulSoup
 
 
 class Ad:
-    def __init__(self, id, name, price):
-        self.id = id
+    def __init__(self, ad_id, name, price):
+        self.ad_id = ad_id
         self.name = name
         self.price = price
 
@@ -12,9 +12,9 @@ class Ad:
         return "%s(%r)" % (self.__class__, self.__dict__)
 
     @classmethod
-    def from_id(cls, id):
-        sid = str(id)
-        data = Util.scrape('http://sulit.com.ph/' + sid)
+    def from_id(cls, ad_id):
+        sad_id = str(ad_id)
+        data = Util.scrape('http://sulit.com.ph/' + sad_id)
         soup = BeautifulSoup(data)
 
         title = soup.title.string
@@ -22,8 +22,22 @@ class Ad:
         price_ = soup.find('span', itemprop='price').string.replace(',', '')
         price = float(price_)
 
-        _ad = cls(id, name, price)
+        _ad = cls(ad_id, name, price)
         return _ad
+
+    @classmethod
+    def from_url(cls, url):
+        data = Util.scrape(url)
+        soup = BeautifulSoup(data)
+
+        ad_id = soup.find('input', {'name': 'adShortURL'})['value']
+        ad_id = int(ad_id.replace('http://sulit.com.ph/', ''))
+        title = soup.title.string
+        name = Util.get_name(title)
+        price = soup.find('span', itemprop='price').string.replace(',', '')
+        price = float(price)
+
+        return cls(ad_id, name, price)
 
 
 class Ads:
@@ -32,7 +46,7 @@ class Ads:
         self.length = len(adList)
 
     def __repr__(self):
-        return "%s (%d results)" % (self.__class__, self.length)
+        return "%s({'results': %d})" % (self.__class__, self.length)
 
     def __iter__(self):
         return self
@@ -40,10 +54,10 @@ class Ads:
     def next(self):
         if len(self.adList):
             a = self.adList.pop()
-            link = a.find('a')['href']
-            idx = link.find('/id/')
-            idx_ = link.find('/', idx+4)
-            return Ad.from_id(int(link[idx+4:idx_]))
+            if 'listingAdsense' not in a.attrs['class']:
+                link = a.find('a')['href']
+                return Ad.from_url(link)
+            return self.next()
         else:
             raise StopIteration
 
@@ -74,14 +88,15 @@ class Util:
 
     @staticmethod
     def get_name(title):
-        idx = title.rfind('-')
-        idx = title.rfind('-', 0, idx)
-        name = title[:idx].strip()
+        ad_idx = title.rfind('-')
+        ad_idx = title.rfind('-', 0, ad_idx)
+        name = title[:ad_idx].strip()
         return name
 
 
-# print str(Ad.from_id(36874892))
-ss = Ads.search('yyy')
+# print str(Ad.from_ad_id(36874892))
+# print str(Ad.from_url("http://sulit.com.ph/37683793"))
+ss = Ads.search('cebu')
 print ss
 for s in ss:
-    print s
+    print str(s)
