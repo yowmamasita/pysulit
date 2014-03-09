@@ -9,7 +9,9 @@ Unofficial Sulit.com.ph SDK for Python
 ## How to use
 
 Ads.search() fetches all results of supplied search term
+
 Returns iterator of Ad instances
+
 Has optional argument `page` that will only fetch results from that specific page
 ```
 from pysulit.api import *
@@ -18,6 +20,7 @@ ads = Ads.search('video+card')
 ```
 
 Ad.from_id() returns Ad instance of specified id (int)
+
 Returns Ad instance
 
 ```
@@ -25,6 +28,7 @@ ad = Ad.from_id(1234567)
 ```
 
 Ad.from_url() returns Ad instance of specified url
+
 Returns Ad instance
 
 ```
