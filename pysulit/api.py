@@ -79,6 +79,7 @@ class Util:
     @staticmethod
     def search(term, page=1):
         s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
+        term = term.replace(' ', '+')
         page = ((page - 1) * 20) + 1
         data = Util.scrape(s_url + term + '?next=' + str(page))
         soup = BeautifulSoup(data)
