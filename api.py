@@ -41,36 +41,53 @@ class Ad:
 
 
 class Ads:
-    def __init__(self, adList):
-        self.adList = adList
-        self.length = len(adList)
-
-    def __repr__(self):
-        return "%s({'results': %d})" % (self.__class__, self.length)
+    def __init__(self, term, ad_list, nxt_page=False):
+        self.term = term
+        self.ad_list = ad_list
+        self.nxt_page = nxt_page
+        self.page = 1
+        self.length = len(ad_list)
 
     def __iter__(self):
         return self
 
     def next(self):
-        if len(self.adList):
-            a = self.adList.pop()
+        if self.ad_list:
+            a = self.ad_list.pop()
             if 'listingAdsense' not in a.attrs['class']:
                 link = a.find('a')['href']
                 return Ad.from_url(link)
             return self.next()
         else:
+            if self.nxt_page:
+                self.page += 1
+                self.ad_list, self.nxt_page = Util.search(self.term, self.page)
+                return self.next()
             raise StopIteration
 
     @classmethod
-    def search(cls, term):
-        s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
-        data = Util.scrape(s_url + term)
-        soup = BeautifulSoup(data)
-        adList = soup('div', class_='listingItem')
-        return cls(adList)
+    def search(cls, term, page=0):
+        if page > 0:
+            ad_list, nxt_page = Util.search(term, page)
+            nxt_page = False
+        else:
+            ad_list, nxt_page = Util.search(term, 1)
+        return cls(term, ad_list, nxt_page)
 
 
 class Util:
+    @staticmethod
+    def search(term, page=1):
+        s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
+        page = ((page - 1) * 20) + 1
+        data = Util.scrape(s_url + term + '?next=' + str(page))
+        soup = BeautifulSoup(data)
+        ad_list = soup('div', class_='listingItem')
+        nextBtn = soup.find('li', class_='skipPage').next_sibling.next_sibling
+        if nextBtn:
+            return (ad_list, True)
+        return (ad_list, False)
+
     @staticmethod
     def scrape(url):
         s = requests.Session()
@@ -96,7 +113,10 @@ class Util:
 
 # print str(Ad.from_ad_id(36874892))
 # print str(Ad.from_url("http://sulit.com.ph/37683793"))
-ss = Ads.search('cebu')
+ss = Ads.search('magnet+bracelet', 3)
 print ss
+x = 1
 for s in ss:
-    print str(s)
+    print x
+    x += 1
+    print str(s.ad_id)
