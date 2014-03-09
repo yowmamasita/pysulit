@@ -109,14 +109,3 @@ class Util:
         ad_idx = title.rfind('-', 0, ad_idx)
         name = title[:ad_idx].strip()
         return name
-
-
-# print str(Ad.from_ad_id(36874892))
-# print str(Ad.from_url("http://sulit.com.ph/37683793"))
-ss = Ads.search('magnet+bracelet', 3)
-print ss
-x = 1
-for s in ss:
-    print x
-    x += 1
-    print str(s.ad_id)
