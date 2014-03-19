@@ -14,7 +14,7 @@ class Ad:
     @classmethod
     def from_id(cls, ad_id):
         sad_id = str(ad_id)
-        data = Util.scrape('http://sulit.com.ph/' + sad_id)
+        data = Util.scrape('http://olx.ph/' + sad_id)
         soup = BeautifulSoup(data)
 
         title = soup.title.string
@@ -31,7 +31,7 @@ class Ad:
         soup = BeautifulSoup(data)
 
         ad_id = soup.find('input', {'name': 'adShortURL'})['value']
-        ad_id = int(ad_id.replace('http://sulit.com.ph/', ''))
+        ad_id = int(ad_id.replace('http://olx.ph/', ''))
         title = soup.title.string
         name = Util.get_name(title)
         price = soup.find('span', itemprop='price').string.replace(',', '')
@@ -78,7 +78,7 @@ class Ads:
 class Util:
     @staticmethod
     def search(term, page=1):
-        s_url = 'http://www.sulit.com.ph/index.php/classifieds+directory/q/'
+        s_url = 'http://www.olx.ph/index.php/classifieds+directory/q/'
         term = term.replace(' ', '+')
         page = ((page - 1) * 20) + 1
         data = Util.scrape(s_url + term + '?next=' + str(page))
