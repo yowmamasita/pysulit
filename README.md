@@ -4,7 +4,7 @@ Unofficial Sulit.com.ph SDK for Python
 
 ## Version
 
-1.0
+1.0.1
 
 ## How to use
 
@@ -32,7 +32,7 @@ Ad.from_url() returns Ad instance of specified url
 Returns Ad instance
 
 ```
-ad = Ad.from_url('http://www.sulit.com.ph/index.php/view+classifieds/id/.../...')
+ad = Ad.from_url('http://www.olx.ph/index.php/view+classifieds/id/.../...')
 ```
 
 An Ad instance has the ff properties: `ad_id` (int), `name` (str), and `price` (float)
